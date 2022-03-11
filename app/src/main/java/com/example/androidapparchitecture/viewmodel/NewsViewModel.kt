@@ -1,5 +1,6 @@
 package com.example.androidapparchitecture.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.androidapparchitecture.data.Message
@@ -28,12 +29,20 @@ class NewsViewModel(
         fetchJob?.cancel()
         fetchJob = viewModelScope.launch {
             try {
-                val newsItems = repository.newsItemsForCategory(category)
                 _uiState.update {
+                    it.copy(isFetchingArticles = true)
+                }
+
+                val newsItems = repository.newsItemsForCategory(category)
+                Log.d("__sr", "" + newsItems.size)
+                _uiState.update {
+                    Log.d("__sr", "update")
                     it.copy(newsItems = newsItems)
+                    it.copy(isFetchingArticles = false)
                 }
             } catch (ioe: IOException) {
                 // Handle the error and notify the UI when appropriate.
+                Log.d("__sr", ioe.toString())
                 _uiState.update {
                     val messages = getMessagesFromThrowable(ioe)
                     it.copy(userMessages = messages)

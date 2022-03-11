@@ -2,6 +2,9 @@ package com.example.androidapparchitecture
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
+import android.view.View
+import android.widget.Button
 import android.widget.ProgressBar
 import androidx.activity.viewModels
 import androidx.core.view.isVisible
@@ -9,19 +12,21 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.androidapparchitecture.viewmodel.NewsViewModel
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
-class MainActivity : AppCompatActivity() {
+class NewsActivity : AppCompatActivity() {
 
     private val viewModel: NewsViewModel by viewModels()
-    lateinit var progressBar: ProgressBar
+    private lateinit var progressBar: ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        progressBar = ProgressBar(this)
+        progressBar = findViewById(R.id.progressBar)
+
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -30,10 +35,16 @@ class MainActivity : AppCompatActivity() {
                     viewModel.uiState
                         .map { it.isFetchingArticles }
                         .distinctUntilChanged()
-                        .collect { progressBar.isVisible = it }
+                        .collect {
+                            Log.d("__sr", it.toString())
+                            progressBar.isVisible = it
+                        }
                 }
             }
         }
 
+        findViewById<Button>(R.id.btn).setOnClickListener {
+            viewModel.fetchArticles("a")
+        }
     }
 }
